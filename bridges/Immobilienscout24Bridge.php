@@ -19,6 +19,12 @@ class Immobilienscout24Bridge extends BridgeAbstract {
 				'type' => 'checkbox',
 				'required' => false,
 				'title' => 'Check if you only want private offers'
+			),
+			'all_images' => array(
+				'name' => 'All images',
+				'type' => 'checkbox',
+				'requred' => false,
+				'title' => 'Check if you want to see all images in the feed'
 			)
 		)
 	);
@@ -82,6 +88,17 @@ class Immobilienscout24Bridge extends BridgeAbstract {
 				$item['logo'] = $logo->{'data-lazy-src'};
 			}
 
+			// Prepare all images to add them to the content. That way we get a
+			// complete overview of the offer
+			$html_pictures = '';
+			foreach($item['enclosures'] as $enclosure){
+				$html_pictures .= <<<EOD
+<img src="{$enclosure}" style="margin:10px 10px 0 0; border:1px solid black;" >
+EOD;
+				if($this->getInput('all_images')) continue;
+				break; // Leave after adding the first one
+			}
+
 			$item['content'] = <<<EOD
 <p style="font-weight:bold; padding-bottom:1em;">{$item['title']}</p>
 <table>
@@ -98,7 +115,7 @@ class Immobilienscout24Bridge extends BridgeAbstract {
 		<td style="padding-left:1em;">{$item['rooms']}</td>
 	</tr>
 </table>
-<img src={$item['enclosures'][0]} style="display:block; padding-top:1em;"/>
+{$html_pictures}
 EOD;
 
 			$this->items[] = $item;
